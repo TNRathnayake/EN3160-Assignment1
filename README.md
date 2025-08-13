@@ -5,38 +5,6 @@ This repo contains my code and report for **EN3160 Image Processing and Machine 
 
 ---
 
-## What’s inside
-
-```
-.
-├─ a1images/                 # input images given with the assignment
-│  ├─ brain_proton_density_slice.png
-│  ├─ highlights_and_shadows.jpg
-│  ├─ spider.png
-│  ├─ shells.tif
-│  ├─ einstein.png
-│  └─ a1q5images/            # small/large pairs for Q8
-│     ├─ im01.png, im01small.png, ...
-├─ Output_Images/            # all results saved here by the scripts
-├─ code/
-│  ├─ q1_intensity_lut.py
-│  ├─ q2_brain_gaussian_lut.py
-│  ├─ q3_gamma_L_in_LAB.py
-│  ├─ q4_vibrance_hsv.py
-│  ├─ q5_hist_equalization.py
-│  ├─ q6_fg_hist_eq.py
-│  ├─ q7_sobel.py
-│  └─ q8_zoom_and_nssd.py
-├─ report/
-│  └─ 220528X_a01.pdf        # final report
-├─ requirements.txt
-└─ README.md                 # this file
-```
-
-> If you don’t see the `code/` folder in your copy, the snippets for each question are the same as in the report; you can paste them into a Python file or a Jupyter cell and run.
-
----
-
 ## Setup
 
 1. **Python**: 3.9+ (tested on 3.10)  
