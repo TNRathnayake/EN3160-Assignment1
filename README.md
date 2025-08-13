@@ -1,92 +1,97 @@
-# EN3160 – Assignment 1  
-**Intensity Transformations & Neighborhood Filtering**
+# EN3160 — Assignment 1  
+_Image Processing & Machine Vision_
 
-This repo contains my code and report for **EN3160 Image Processing and Machine Vision** (University of Moratuwa).
-
----
-
-## Setup
-
-1. **Python**: 3.9+ (tested on 3.10)  
-2. **Install packages**
-   ```bash
-   python -m venv .venv
-   # Windows
-   .venv\\Scripts\\activate
-   # macOS/Linux
-   # source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-   `requirements.txt` contains: `opencv-python`, `numpy`, `matplotlib`.
-
-3. Make sure the **input images** are in `a1images/` as shown above.
+**Student:** Rathnayake R M T N B (220528X)  
+**Course:** EN3160 Image Processing and Machine Vision  
+**University:** University of Moratuwa
 
 ---
 
-## How to run
+## Overview
 
-Each question has a small script under `code/`. Running a script will:
+This repository contains my solutions for Assignment 1 on intensity transformations and neighbourhood filtering. All experiments, figures, and plots were generated from a **single Jupyter notebook** and exported into the `Output_Images/` folder for inclusion in the report.
 
-- read the required input image(s) from `a1images/`
-- display results
-- save all figures to `Output_Images/` with clear file names
+The tasks span point-wise intensity mappings, colour‑space manipulations, histogram equalization (global and masked), spatial filtering with Sobel, image zooming/interpolation with error analysis, and foreground segmentation with GrabCut.
 
-Example:
 
-```bash
-python code/q1_intensity_lut.py
-```
+## What’s inside
 
-### Scripts and their main outputs
+- **`A01.ipynb`** — the single notebook used to produce every figure and result.
+- **`a1images/`** — input images supplied with the assignment.
+- **`Output_Images/`** — all generated figures used in the report (PNG).
+- **`README.md`** — this file.
+- **`report/`** — LaTeX sources for the final PDF, if present.
 
-| Question | Script | Key inputs | Main outputs (in `Output_Images/`) |
-|---|---|---|---|
-| Q1 – Piecewise LUT | `q1_intensity_lut.py` | `a1images/emma.jpg` | `q1_lut.png`, `q1_out.png` |
-| Q2 – Brain, Gaussian LUTs | `q2_brain_gaussian_lut.py` | `a1images/brain_proton_density_slice.png` | `q2_gray.png`, `q2_white.png`, `q2_lut_gray.png`, `q2_lut_white.png` |
-| Q3 – Gamma on L* (LAB) | `q3_gamma_L_in_LAB.py` | `a1images/highlights_and_shadows.jpg` | `q3_gamma_corrected.png`, `q3_L_hist_original.png`, `q3_L_hist_gamma_0.8.png` |
-| Q4 – Vibrance (HSV S-plane) | `q4_vibrance_hsv.py` | `a1images/spider.png` | `q4_vibrance_enhanced.png`, `q4_vibrance_lut.png`, `q4_HSV.png` |
-| Q5 – Histogram Equalization | `q5_hist_equalization.py` | `a1images/shells.tif` | `q5_original_gray.png`, `q5_equalized.png`, `q5_hist_before.png`, `q5_hist_after.png` |
-| Q6 – **Foreground-only** Hist. Eq. | `q6_fg_hist_eq.py` | `a1images/jeniffer.jpg` (or your Fig. 6) | `q6_hsv_planes.png`, `q6_mask.png`, `q6_original.png`, `q6_result_strict.png`, FG hist/CDF plots |
-| Q7 – Sobel (3 ways) | `q7_sobel.py` | `a1images/einstein.png` | `q7_gx_filter2d.png`, `q7_gy_filter2d.png`, `q7_gx_manual.png`, `q7_gy_manual.png`, `q7_out.png` |
-| Q8 – Zoom & nSSD | `q8_zoom_and_nssd.py` | `a1images/a1q5images/*` | upscaled images + `q8_nssd_results.csv` |
-| Q9 – GrabCut & Background Blur | (in report) | `a1images/daisy.jpg` (or flower) | `q9_mask_bigflower.png`, `q9_fg_bigflower.png`, `q9_bg_bigflower.png`, `q9_enhanced_bigflower.png` |
 
-> Note: Some file names in the assignment (e.g., “jennifer”, “daisy”) may differ. Update paths in the scripts if yours are different.
+## Methods & Highlights (by question)
+
+### Q1 — Piecewise Intensity Transformation
+A 256‑entry LUT implements the given piecewise mapping. Shadows (0–50) and highlights (151–255) remain mostly unchanged, while midtones (51–150) are amplified with a slope of ~1.55 and a deliberate jump at 150.  
+**Figures:** `q1_lut.png`, `q1_out.png`
+
+### Q2 — Accentuating Gray/White Matter (MRI PD slice)
+A smooth Gaussian pulse is used as the intensity transform:
+\(
+f(x)=b+A\exp\!\big(-\frac{(x-\mu)^2}{2\sigma^2}\big)
+\).
+\(\mu\) and \(\sigma\) are chosen to brighten narrow, tissue‑specific bands (GM ≈150, WM ≈200; \(\sigma=15\)).  
+**Figures:** `q2_gray.png`, `q2_white.png`, and LUT plots `q2_lut_gray.png`, `q2_lut_white.png`.
+
+### Q3 — Gamma on L\* (CIELAB)
+The image is converted to L\*a\*b\*, and a power law is applied to the **L\*** channel with \(\gamma=0.8\). This brightens shadows while preserving chroma (a\*, b\* unchanged). Histograms for the L\* channel are shown before/after.  
+**Figures:** `q3_gamma_corrected.png`, `q3_L_hist_original.png`, `q3_L_hist_gamma_0.8.png`.
+
+### Q4 — “Vibrance” via Saturation Bump (HSV)
+Only the **S** channel is modified using  
+\(
+f(x)=\min\{x+a\cdot 128\,e^{-(x-128)^2/(2\sigma^2)},\,255\}
+\)
+with \(a=0.65\), \(\sigma=70\). This selectively increases mid‑range saturation; very low/high saturation is minimally altered.  
+**Figures:** `q4_HSV.png`, `q4_vibrance_enhanced.png`, `q4_vibrance_lut.png`.
+
+### Q5 — Custom Histogram Equalization (Grayscale)
+A hand‑written implementation computes the histogram, CDF, and LUT  
+\(
+\mathrm{LUT}(k)=\big(\frac{\mathrm{CDF}(k)-\mathrm{CDF}_{\min}}{N-\mathrm{CDF}_{\min}}\big)\cdot 255
+\)
+and applies it to a grayscale image (with safe handling for 16‑bit inputs).  
+**Figures:** `q5_original_gray.png`, `q5_equalized.png`, `q5_hist_before.png`, `q5_hist_after.png`.
+
+### Q6 — Foreground‑Only Histogram Equalization
+The image is split to HSV. A binary **mask** is obtained from **S** (Otsu thresholding + light morphology). The histogram equalization LUT is built **only from the foreground pixels of V**, then the equalized foreground is recomposed with the original background.  
+**Figures:** `q6_hsv_planes.png`, `q6_mask.png`, `q6_original.png`, `q6_result_strict.png`, plus foreground histograms/CDFs `q6_fg_*`.
+
+### Q7 — Sobel Gradient (Three Ways)
+Sobel \(3\times 3\) filters are applied via:
+1) `cv2.filter2D` (reference),  
+2) a custom 2D convolution,  
+3) a separable implementation \(K_x=[1,2,1]^T[\,1,0,-1\,]\), \(K_y=K_x^T\).  
+Signed responses are linearly mapped to 0–255 (0→128) for visualization.  
+**Figures:** `q7_gx_filter2d.png`, `q7_gy_filter2d.png`, `q7_gx_manual.png`, `q7_gy_manual.png`, and the four‑panel separable output `q7_out.png`.
+
+### Q8 — Zoom (Nearest vs. Bilinear) + nSSD
+Small images are upscaled exactly to their large counterparts using nearest‑neighbour and bilinear interpolation. Quality is summarized by **normalized SSD** (lower is better).
+| Pair | nSSD (NN) | nSSD (Bilinear) |
+|---|---:|---:|
+| im01small → im01 | 0.012058 | **0.010187** |
+| im02small → im02 | 0.004190 | **0.002915** |
+| im03small → im03 | 0.007530 | **0.005634** |
+
+### Q9 — GrabCut Segmentation + Background Blur
+GrabCut is initialized with a mask: borders as sure background, a loose ellipse as probable foreground (big flower), and a small rectangle excluding the bud. The final mask yields separated foreground/background. A strongly blurred background is blended with a feathered alpha to avoid hard cut‑outs.  
+**Figures:** `q9_mask_bigflower.png`, `q9_fg_bigflower.png`, `q9_bg_bigflower.png`, `q9_enhanced_bigflower.png`.
 
 ---
 
-## Short notes per question
+## Notes & Limitations
 
-- **Q1**: Piecewise LUT (with discontinuities) boosts mid-tones; may cause slight banding.
-- **Q2**: Gaussian “bump” LUTs smoothly highlight **gray** vs **white** matter (choose μ,σ).
-- **Q3**: Gamma on **L*** only (in LAB) brightens/darkens without changing chroma. I used γ = 0.8.
-- **Q4**: Vibrance modifies only **S** in HSV using a Gaussian bump; I used `a≈0.65`, `σ=70`.
-- **Q5**: Custom histogram equalization via CDF-based LUT; handles 16‑bit TIFF by mapping to 8‑bit first.
-- **Q6**: Foreground-only equalization on **V**. Mask from **S** (Otsu), equalize only FG, then recombine FG+BG.
-- **Q7**: Sobel via (a) `filter2D`, (b) manual 2‑D conv, (c) separable `[1,2,1]^T * [1,0,-1]`. Same response; separable is faster.
-- **Q8**: Implemented **nearest-neighbour** and **bilinear** zoom. Compared small→large using **normalized SSD (nSSD)**. Bilinear gives lower nSSD.
-- **Q9**: GrabCut segmentation to keep only the big flower; blurred background; feathered alpha reduces dark halo along edges.
+- Piecewise mappings with jumps (Q1) can introduce visible banding in smooth regions; continuous LUTs avoid this.  
+- Point‑wise transforms (Q2, Q3, Q4, Q5) do not denoise; neighbourhood filters would be required for that.  
+- Foreground equalization (Q6) depends on the mask quality; soft blending can reduce edge artifacts.  
+- For Q8, bilinear consistently reduced nSSD versus nearest‑neighbour, as expected.  
+- GrabCut seeds (Q9) were chosen to segment only the main flower; different seeds change the outcome.
 
----
 
-## Reproducibility tips
+## Acknowledgements
 
-- Run each script from the repo root so relative paths work.
-- For grayscale plots, set `vmin=0, vmax=255` in matplotlib to avoid washed-out displays.
-- If `shells.tif` is 16‑bit, the script normalizes to 8‑bit before equalization.
-
----
-
-## License / Credits
-
-- Images belong to the course materials / original sources noted by the assignment.
-- Code is for educational use for EN3160.
-
----
-
-## Contact
-
-- **Index**: 220528X  
-- **Name**: Rathnayake R M T N B
-
-If something doesn’t run, please open an issue or share the script name and full error message.
+Starter images are provided with the assignment. OpenCV and NumPy were used for image operations, and Matplotlib for visualizations.
